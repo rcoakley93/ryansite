@@ -1,16 +1,17 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { 
-  Plane, Radio, Activity, TrendingUp, Gauge, Navigation,
-  ArrowUp, ArrowDown, Minus, RefreshCw, Maximize2, Info
+  Plane, Radio, Activity, TrendingUp, Gauge,
+  ArrowUp, ArrowDown, Minus, RefreshCw, Info
 } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 
 // Ryan's location (Loudoun Valley Estates, VA)
 const HOME_POSITION = [39.0458, -77.4875]
 const RANGE_RINGS = [50, 100, 150, 200, 250] // nautical miles
+const ADSB_API = 'https://adsb.ryancoakley.com/data/aircraft.json'
 
 // Calculate distance in nautical miles using Haversine formula
 function calculateDistanceNM(lat1, lon1, lat2, lon2) {
@@ -24,7 +25,7 @@ function calculateDistanceNM(lat1, lon1, lat2, lon2) {
   return R * c
 }
 
-// Sample aircraft data - will be replaced with real feed
+// Fallback sample aircraft data
 const generateSampleAircraft = () => [
   {
     hex: 'A12345',
@@ -140,15 +141,15 @@ const generateSampleAircraft = () => [
   },
 ]
 
-// Get altitude color (standard aviation coloring)
+// Get altitude color
 function getAltitudeColor(altitude) {
-  if (altitude < 1000) return '#ff4444'      // Ground level - red
-  if (altitude < 5000) return '#ff8c00'      // Low - orange
-  if (altitude < 10000) return '#ffff00'     // Medium low - yellow
-  if (altitude < 20000) return '#00ff00'     // Medium - green
-  if (altitude < 30000) return '#00ffff'     // Medium high - cyan
-  if (altitude < 40000) return '#0088ff'     // High - blue
-  return '#ff00ff'                            // Very high - magenta
+  if (altitude < 1000) return '#ff4444'
+  if (altitude < 5000) return '#ff8c00'
+  if (altitude < 10000) return '#ffff00'
+  if (altitude < 20000) return '#34D399' // Emerald for medium
+  if (altitude < 30000) return '#00ffff'
+  if (altitude < 40000) return '#0088ff'
+  return '#ff00ff'
 }
 
 // Create aircraft icon
@@ -186,9 +187,9 @@ function RangeRings() {
         <Circle
           key={nm}
           center={HOME_POSITION}
-          radius={nm * 1852} // Convert nautical miles to meters
+          radius={nm * 1852}
           pathOptions={{
-            color: 'rgba(0, 255, 136, 0.3)',
+            color: 'rgba(52, 211, 153, 0.3)',
             weight: 1,
             fillColor: 'transparent',
             dashArray: '5, 10',
@@ -200,17 +201,17 @@ function RangeRings() {
 }
 
 // Stats card component
-function StatCard({ icon: Icon, label, value, subvalue, color = 'text-accent-glow' }) {
+function StatCard({ icon: Icon, label, value, subvalue }) {
   return (
-    <div className="glass p-4 rounded-xl">
+    <div className="glass-card-sm p-4">
       <div className="flex items-center space-x-3">
-        <div className={`p-2 rounded-lg bg-white/5 ${color}`}>
-          <Icon size={20} />
+        <div className="p-2 rounded-xl bg-emerald-500/20">
+          <Icon size={20} className="text-emerald-400" />
         </div>
         <div>
-          <p className="text-2xl font-bold">{value}</p>
-          <p className="text-xs text-gray-500">{label}</p>
-          {subvalue && <p className="text-xs text-gray-600">{subvalue}</p>}
+          <p className="text-2xl font-bold text-white">{value}</p>
+          <p className="label-caps text-zinc-500">{label}</p>
+          {subvalue && <p className="text-xs text-zinc-600">{subvalue}</p>}
         </div>
       </div>
     </div>
@@ -221,16 +222,16 @@ function StatCard({ icon: Icon, label, value, subvalue, color = 'text-accent-glo
 function AircraftListItem({ aircraft, selected, onClick }) {
   const VertIcon = aircraft.vert_rate > 100 ? ArrowUp : 
                    aircraft.vert_rate < -100 ? ArrowDown : Minus
-  const vertColor = aircraft.vert_rate > 100 ? 'text-green-400' : 
-                    aircraft.vert_rate < -100 ? 'text-red-400' : 'text-gray-500'
+  const vertColor = aircraft.vert_rate > 100 ? 'text-emerald-400' : 
+                    aircraft.vert_rate < -100 ? 'text-red-400' : 'text-zinc-500'
   
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`p-3 rounded-lg cursor-pointer transition-all ${
-        selected ? 'bg-accent-primary/20 border border-accent-primary/50' : 'bg-white/5 hover:bg-white/10'
+      className={`p-3 rounded-2xl cursor-pointer transition-all ${
+        selected ? 'bg-emerald-500/20 border border-emerald-500/50' : 'bg-white/5 hover:bg-white/10'
       }`}
     >
       <div className="flex items-center justify-between">
@@ -240,17 +241,17 @@ function AircraftListItem({ aircraft, selected, onClick }) {
             style={{ backgroundColor: getAltitudeColor(aircraft.altitude) }}
           />
           <div>
-            <p className="font-mono font-bold text-sm">
+            <p className="font-mono font-bold text-sm text-white">
               {aircraft.flight?.trim() || aircraft.hex}
             </p>
-            <p className="text-xs text-gray-500">{aircraft.aircraft_type || 'Unknown'}</p>
+            <p className="text-xs text-zinc-500">{aircraft.aircraft_type || 'Unknown'}</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-sm font-medium">{aircraft.altitude ? Math.round(aircraft.altitude).toLocaleString() : '---'} ft</p>
+          <p className="text-sm font-medium text-white">{aircraft.altitude ? Math.round(aircraft.altitude).toLocaleString() : '---'} ft</p>
           <div className="flex items-center justify-end space-x-1">
             <VertIcon size={12} className={vertColor} />
-            <span className="text-xs text-gray-500">{aircraft.speed || '---'} kts</span>
+            <span className="text-xs text-zinc-500">{aircraft.speed || '---'} kts</span>
           </div>
         </div>
       </div>
@@ -276,24 +277,42 @@ export default function Radar() {
   const [mapCenter, setMapCenter] = useState(null)
   const mapRef = useRef(null)
 
-  // Load sample data and simulate updates
   useEffect(() => {
-    const updateAircraft = () => {
-      const sample = generateSampleAircraft()
-      // Add some random movement
-      const updated = sample.map(ac => ({
-        ...ac,
-        lat: ac.lat + (Math.random() - 0.5) * 0.01,
-        lon: ac.lon + (Math.random() - 0.5) * 0.01,
-        altitude: ac.altitude + (Math.random() - 0.5) * 100,
-        seen: Math.random() * 2,
-      }))
-      setAircraft(updated)
-      setLastUpdate(new Date())
+    const fetchAircraft = async () => {
+      try {
+        const res = await fetch(ADSB_API)
+        const data = await res.json()
+        if (data.aircraft) {
+          // Transform dump1090 format to our format
+          const transformed = data.aircraft
+            .filter(ac => ac.lat && ac.lon) // Only aircraft with position
+            .map(ac => ({
+              hex: ac.hex,
+              flight: ac.flight?.trim() || null,
+              lat: ac.lat,
+              lon: ac.lon,
+              altitude: ac.alt_baro === 'ground' ? 0 : ac.alt_baro,
+              speed: ac.gs,
+              track: ac.track,
+              vert_rate: ac.baro_rate || ac.geom_rate || 0,
+              squawk: ac.squawk,
+              aircraft_type: ac.category || null,
+              messages: ac.messages,
+              seen: ac.seen,
+            }))
+          setAircraft(transformed)
+          setLastUpdate(new Date())
+        }
+      } catch (err) {
+        console.error('Failed to fetch aircraft data:', err)
+        // Fallback to sample data on error
+        setAircraft(generateSampleAircraft())
+        setLastUpdate(new Date())
+      }
     }
 
-    updateAircraft()
-    const interval = setInterval(updateAircraft, 3000)
+    fetchAircraft()
+    const interval = setInterval(fetchAircraft, 3000)
     return () => clearInterval(interval)
   }, [])
 
@@ -329,19 +348,19 @@ export default function Radar() {
         >
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold">
-                <span className="gradient-text">ADS-B Radar</span>
+              <h1 className="text-3xl sm:text-4xl font-bold heading-tight">
+                <span className="text-white">ADS-B Radar</span>
               </h1>
-              <p className="text-gray-400 mt-1">
+              <p className="text-zinc-400 mt-1 text-sm">
                 Live aircraft tracking from my roof antenna
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="flex items-center space-x-2 text-sm text-zinc-500">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Live</span>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-zinc-600">
                 Updated {lastUpdate.toLocaleTimeString()}
               </div>
             </div>
@@ -370,8 +389,8 @@ export default function Radar() {
             transition={{ delay: 0.2 }}
             className="lg:col-span-3"
           >
-            <div className="glass-card p-2 rounded-2xl overflow-hidden">
-              <div className="relative h-[500px] md:h-[600px] rounded-xl overflow-hidden">
+            <div className="glass-card p-2 overflow-hidden">
+              <div className="relative h-[500px] md:h-[600px] rounded-4xl overflow-hidden">
                 <MapContainer
                   center={HOME_POSITION}
                   zoom={8}
@@ -393,10 +412,10 @@ export default function Radar() {
                       html: `<div style="
                         width: 16px;
                         height: 16px;
-                        background: #00ff88;
+                        background: #34D399;
                         border-radius: 50%;
-                        border: 3px solid #003322;
-                        box-shadow: 0 0 20px #00ff88;
+                        border: 3px solid #000;
+                        box-shadow: 0 0 20px #34D399;
                       "></div>`,
                       iconSize: [16, 16],
                       iconAnchor: [8, 8],
@@ -442,21 +461,21 @@ export default function Radar() {
                 </MapContainer>
 
                 {/* Altitude Legend */}
-                <div className="absolute bottom-4 left-4 glass p-3 rounded-lg text-xs z-[1000]">
-                  <p className="font-medium mb-2">Altitude</p>
+                <div className="absolute bottom-4 left-4 glass-card-sm p-3 text-xs z-[1000]">
+                  <p className="font-medium mb-2 text-white">Altitude</p>
                   <div className="space-y-1">
                     {[
                       { color: '#ff4444', label: '< 1k ft' },
                       { color: '#ff8c00', label: '1-5k ft' },
                       { color: '#ffff00', label: '5-10k ft' },
-                      { color: '#00ff00', label: '10-20k ft' },
+                      { color: '#34D399', label: '10-20k ft' },
                       { color: '#00ffff', label: '20-30k ft' },
                       { color: '#0088ff', label: '30-40k ft' },
                       { color: '#ff00ff', label: '> 40k ft' },
                     ].map(({ color, label }) => (
                       <div key={label} className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                        <span className="text-gray-400">{label}</span>
+                        <span className="text-zinc-400">{label}</span>
                       </div>
                     ))}
                   </div>
@@ -472,13 +491,13 @@ export default function Radar() {
             transition={{ delay: 0.3 }}
             className="lg:col-span-1"
           >
-            <div className="glass-card p-4 rounded-2xl h-[500px] md:h-[600px] overflow-hidden flex flex-col">
+            <div className="glass-card p-4 h-[500px] md:h-[600px] overflow-hidden flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold">Aircraft List</h2>
-                <span className="text-xs text-gray-500">{aircraft.length} tracked</span>
+                <h2 className="font-semibold text-white">Aircraft List</h2>
+                <span className="label-caps text-zinc-500">{aircraft.length} tracked</span>
               </div>
               
-              <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto space-y-2 pr-2">
                 {aircraft
                   .sort((a, b) => (b.altitude || 0) - (a.altitude || 0))
                   .map(ac => (
@@ -501,16 +520,13 @@ export default function Radar() {
           transition={{ delay: 0.4 }}
           className="mt-6"
         >
-          <div className="glass p-4 rounded-xl flex items-start space-x-3">
-            <Info size={20} className="text-accent-glow flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-gray-400">
+          <div className="glass-card-sm p-4 flex items-start space-x-3">
+            <Info size={20} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-zinc-400">
               <p>
                 <strong className="text-white">About this feed:</strong> Aircraft positions are received via ADS-B 
                 (1090 MHz) and UAT (978 MHz) antennas mounted on my roof. The receiver runs 24/7 and feeds 
                 data to FlightAware, ADS-B Exchange, and other tracking networks.
-              </p>
-              <p className="mt-2 text-xs text-gray-500">
-                Sample data shown — live feed coming soon!
               </p>
             </div>
           </div>

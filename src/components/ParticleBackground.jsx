@@ -1,83 +1,70 @@
-import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-
-// Floating particles that move slowly
-function FloatingParticles() {
-  const particles = Array.from({ length: 40 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 4 + 1,
-    duration: Math.random() * 20 + 15,
-    delay: Math.random() * -20,
-  }))
-
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full bg-white/20"
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-          }}
-          animate={{
-            y: [0, -100, 0],
-            x: [0, Math.random() * 50 - 25, 0],
-            opacity: [0.1, 0.4, 0.1],
-          }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: particle.delay,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// Grid lines in background
-function GridLines() {
-  return (
-    <div className="absolute inset-0 overflow-hidden opacity-[0.03]">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(99, 102, 241, 0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(99, 102, 241, 0.5) 1px, transparent 1px)
-          `,
-          backgroundSize: '80px 80px',
-        }}
-      />
-    </div>
-  )
-}
 
 export default function ParticleBackground() {
   return (
-    <div className="particles-bg">
-      {/* Large gradient orbs */}
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
-      <div className="orb orb-3" />
-      
-      {/* Floating particles */}
-      <FloatingParticles />
-      
-      {/* Grid overlay */}
-      <GridLines />
-      
-      {/* Radial gradient overlay for depth */}
-      <div 
-        className="absolute inset-0"
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      {/* Large gradient orbs for glassmorphism to blur */}
+      <motion.div
+        animate={{
+          x: [0, 100, 0],
+          y: [0, -50, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full"
         style={{
-          background: 'radial-gradient(ellipse at 50% 50%, transparent 0%, rgba(10, 10, 15, 0.8) 70%)',
+          background: 'radial-gradient(circle, rgba(52, 211, 153, 0.15) 0%, transparent 70%)',
+        }}
+      />
+      
+      <motion.div
+        animate={{
+          x: [0, -80, 0],
+          y: [0, 80, 0],
+        }}
+        transition={{
+          duration: 25,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="absolute top-1/3 -right-40 w-[500px] h-[500px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%)',
+        }}
+      />
+      
+      <motion.div
+        animate={{
+          x: [0, 60, 0],
+          y: [0, -40, 0],
+        }}
+        transition={{
+          duration: 18,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(52, 211, 153, 0.1) 0%, transparent 70%)',
+        }}
+      />
+
+      <motion.div
+        animate={{
+          x: [0, -50, 0],
+          y: [0, 60, 0],
+        }}
+        transition={{
+          duration: 22,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="absolute top-1/2 left-1/2 w-[350px] h-[350px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%)',
         }}
       />
     </div>

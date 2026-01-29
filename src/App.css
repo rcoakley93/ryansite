@@ -1,42 +1,115 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* App-specific styles */
+
+/* Ensure smooth transitions between sections */
+main {
+  position: relative;
+  overflow-x: hidden;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Section spacing */
+section {
+  position: relative;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
+/* Ensure proper z-index stacking */
+section:nth-child(1) { z-index: 10; }
+section:nth-child(2) { z-index: 20; }
+section:nth-child(3) { z-index: 30; }
+section:nth-child(4) { z-index: 40; }
+section:nth-child(5) { z-index: 50; }
+section:nth-child(6) { z-index: 60; }
+
+/* Link hover underline effect */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
+
+/* Magnetic button effect placeholder */
+.magnetic-button {
+  transition: transform 0.15s ease-out;
+}
+
+/* Text reveal animation */
+.text-reveal {
+  overflow: hidden;
+}
+
+.text-reveal span {
+  display: inline-block;
+  transform: translateY(100%);
+  animation: text-reveal 0.8s ease forwards;
+}
+
+@keyframes text-reveal {
   to {
-    transform: rotate(360deg);
+    transform: translateY(0);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Stagger delays for text reveal */
+.text-reveal span:nth-child(1) { animation-delay: 0s; }
+.text-reveal span:nth-child(2) { animation-delay: 0.05s; }
+.text-reveal span:nth-child(3) { animation-delay: 0.1s; }
+.text-reveal span:nth-child(4) { animation-delay: 0.15s; }
+.text-reveal span:nth-child(5) { animation-delay: 0.2s; }
+
+/* Glow effect on hover */
+.glow-hover {
+  transition: box-shadow 0.3s ease;
 }
 
-.card {
-  padding: 2em;
+.glow-hover:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
 }
 
-.read-the-docs {
-  color: #888;
+/* Parallax layer styles */
+.parallax-layer {
+  will-change: transform;
+}
+
+/* Smooth image loading */
+img {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+img[data-loading="true"] {
+  opacity: 0;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid hsl(180 100% 50%);
+  outline-offset: 2px;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: white;
+  color: black;
+  padding: 8px 16px;
+  z-index: 100;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
 }

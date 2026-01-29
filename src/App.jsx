@@ -24,7 +24,7 @@ const pageVariants = {
     scale: 1,
     transition: {
       duration: 0.5,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.16, 1, 0.3, 1],
     },
   },
   exit: {
@@ -33,7 +33,7 @@ const pageVariants = {
     scale: 0.98,
     transition: {
       duration: 0.3,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.16, 1, 0.3, 1],
     },
   },
 }
@@ -105,12 +105,12 @@ function AnimatedRoutes() {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-dark-900 relative">
+      <div className="min-h-screen bg-black relative">
         {/* Animated background */}
         <ParticleBackground />
         
-        {/* Noise overlay for texture */}
-        <div className="noise-overlay" />
+        {/* Grain overlay for texture */}
+        <div className="grain-overlay" />
         
         {/* Navigation */}
         <Navbar />
